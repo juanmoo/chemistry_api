@@ -7,8 +7,6 @@ from os import environ
 from dotenv import load_dotenv
 import re
 from spacy.lang.en import English
-from spacy.tokenizer import Tokenizer
-import logging
 from medtrialextractor import RxnExtractor
 import warnings
 from seqeval.metrics.sequence_labeling import get_entities

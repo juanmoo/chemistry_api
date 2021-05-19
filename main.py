@@ -26,25 +26,10 @@ class Extractor(Resource):
             }
 
         paragraphs = data.get('paragraphs', [])
-
-        bio_data = get_ents(paragraphs)
-
-        # TEMP: Use synthetic data for now
-        synthetic_data_dir = environ.get('SYNTHETIC_DATA_DIR')
-        synthetic_extractions_path = os.path.join(
-            synthetic_data_dir, 'extractions.json')
-        extractions = []
-        with open(synthetic_extractions_path, 'r') as f:
-            extractions = json.load(f)
-
-        idxs = list(range(len(extractions)))
-        shuffle(idxs)
-        idxs = idxs[:len(paragraphs)]
-
-        sampled_extractions = [extractions[j] for j in idxs]
+        extractions = get_ents(paragraphs)
 
         return {
-            'extractions': bio_data
+            'extractions': extractions
         }
 
 
