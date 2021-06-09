@@ -14,8 +14,8 @@ from chemdataextractor.doc import Paragraph
 warnings.filterwarnings("ignore")
 
 nlp = English()
-
 tokenizer = nlp.tokenizer
+extractor = None
 
 
 def tokenize(text):
@@ -29,11 +29,15 @@ def tokenize(text):
 def get_ents(paragraphs):
 
     # get extractor
+    global extractor
+
     config_path = os.path.join(os.path.realpath('.'), '.env')
     load_dotenv(dotenv_path=config_path)
     models_dir = environ.get('MODELS_DIR')
     model_dir = os.path.join(models_dir, 'model_v1')
-    extractor = RxnExtractor(model_dir=model_dir)
+    
+    if extractor is None:
+        extractor = RxnExtractor(model_dir=model_dir)
 
     # Get sentences
     paragraphs = [Paragraph(p).sentences for p in paragraphs]
