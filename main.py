@@ -4,7 +4,6 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from os import environ
 from pathlib import Path
-from random import shuffle
 import json
 import os
 from extract import get_ents
@@ -19,13 +18,11 @@ class Extractor(Resource):
     def post(self):
 
         if request.is_json:
-            data = request.json
+            paragraphs = request.json.get('paragraphs', [])
         else:
-            return {
-                'error': "Please format paragraphs to be extracted in a JSON object."
-            }
+            items = list(request.form.items())
+            paragraphs = [e[1] for e in items if e[0].startswith('paragraphs')]
 
-        paragraphs = data.get('paragraphs', [])
         extractions = get_ents(paragraphs)
 
         return {

@@ -7,9 +7,10 @@ from os import environ
 from dotenv import load_dotenv
 import re
 from spacy.lang.en import English
-from medtrialextractor import RxnExtractor
+from chemrxnextractor import RxnExtractor
 import warnings
-from seqeval.metrics.sequence_labeling import get_entities
+from chemdataextractor.doc import Paragraph
+
 warnings.filterwarnings("ignore")
 
 nlp = English()
@@ -25,16 +26,6 @@ def tokenize(text):
     return text
 
 
-def get_bio(paragraphs, extractor):
-
-    # tokenize paragraphs
-    tok_pars = [tokenize(p) for p in paragraphs]
-
-    toks, labels = extractor.get_entities(tok_pars)
-
-    return toks, labels
-
-
 def get_ents(paragraphs):
 
     # get extractor
@@ -44,16 +35,39 @@ def get_ents(paragraphs):
     model_dir = os.path.join(models_dir, 'model_v1')
     extractor = RxnExtractor(model_dir=model_dir)
 
-    toks, labs = get_bio(paragraphs, extractor)
+    # Get sentences
+    paragraphs = [Paragraph(p).sentences for p in paragraphs]
+    sentences = []
 
-    res = []
-    for t, l in zip(toks, labs):
+    for par in paragraphs:
+        for sent in par:
+            sentences.append(str(sent))
 
-        spans = get_entities(l)
+    reactions = extractor.get_reactions(sentences)
 
-        res.append({
-            'text':  ' '.join(t),
-            'spans': spans,
-            'links': []
-        })
-    return res
+    # Re-combine sentences into paragraphs
+    extractions = []
+    off = 0
+    for par in paragraphs:
+        tokens = []
+        recs = []
+        for j in range(off, off + len(par)):
+            sent_react = reactions[j]
+            for r in sent_react["reactions"]:
+                r_offset = {}
+                for k in r:
+                    r_offset[k] = []
+                    for e in r[k]:
+                        if isinstance(e, (list, tuple)):
+                            r_offset[k].append([j + len(tokens) for j in e])
+                        else:
+                            r_offset[k].append(e + len(tokens))
+
+                recs.append(r_offset)
+                
+            tokens.extend(sent_react['tokens'])
+
+        extractions.append({'tokens': tokens, 'reactions':recs})
+        off += len(par)
+
+    return extractions
