@@ -34,7 +34,8 @@ def get_ents(paragraphs):
     config_path = os.path.join(os.path.realpath('.'), '.env')
     load_dotenv(dotenv_path=config_path)
     models_dir = environ.get('MODELS_DIR')
-    model_dir = os.path.join(models_dir, 'model_v1')
+    model_name = environ.get('ACTIVE_MODEL')
+    model_dir = os.path.join(models_dir, model_name)
     
     if extractor is None:
         extractor = RxnExtractor(model_dir=model_dir)
