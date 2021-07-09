@@ -6,7 +6,7 @@ from os import environ
 from pathlib import Path
 import json
 import os
-from extract import get_ents
+from extract import get_ents, extract_documents
 
 # App Setup
 app = Flask(__name__)
@@ -31,6 +31,27 @@ class Extractor(Resource):
 
 
 api.add_resource(Extractor, '/extract')
+
+
+class DocumentExtractor(Resource):
+    def post(self):
+
+        file_list = []
+
+        # Get all filies in the request
+        for e in request.files:
+            
+            file_list.append(request.files[e])
+        
+        print('file list', file_list)
+
+        extractions = extract_documents(file_list)
+
+        return {
+            'extractions': extractions
+        }
+
+api.add_resource(DocumentExtractor, '/extractDocument')
 
 
 if __name__ == '__main__':
